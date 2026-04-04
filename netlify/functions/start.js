@@ -16,7 +16,12 @@ exports.handler = async (event, context) => {
     const body = JSON.parse(event.body);
     const jobId = `job_${Date.now()}`;
 
-    const store = getStore("veille-jobs");
+    const store = getStore({
+      name: "veille-jobs",
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_BLOBS_TOKEN
+    });
+    
     await store.setJSON(jobId, {
       status: 'pending',
       params: body,
