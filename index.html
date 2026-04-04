@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARINEL - Outil de Veille Stratégique</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0EA5E9;
+            --primary-dark: #0284C7;
+            --primary-light: #38BDF8;
+            --accent: #F59E0B;
+            --accent-dark: #D97706;
+            --bg-dark: #0F172A;
+            --bg-card: #1E293B;
+            --bg-card-hover: #334155;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --border: #334155;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-name {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+        }
+
+        .logo-tagline {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .header-title {
+            text-align: right;
+        }
+
+        .header-title h1 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-title p {
+            font-size: 12px;
+            color: var(--primary-light);
+        }
+
+        /* Mode indicator */
+        .mode-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--accent);
+            margin-top: 8px;
+        }
+
+        .mode-indicator.live {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header h2 {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--primary-light);
+        }
+
+        /* Checkboxes */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .checkbox-item:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .checkbox-item.selected {
+            background: rgba(14, 165, 233, 0.1);
+            border-color: var(--primary);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkbox-custom {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-muted);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .checkbox-item.selected .checkbox-custom {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox-custom svg {
+            width: 12px;
+            height: 12px;
+            fill: white;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .checkbox-item.selected .checkbox-custom svg {
+            opacity: 1;
+        }
+
+        .checkbox-icon {
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        /* Radio buttons */
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .radio-item:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .radio-item.selected {
+            background: rgba(14, 165, 233, 0.1);
+            border-color: var(--primary);
+        }
+
+        .radio-item input[type="radio"] {
+            display: none;
+        }
+
+        .radio-custom {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-muted);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .radio-item.selected .radio-custom {
+            border-color: var(--primary);
+        }
+
+        .radio-custom::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .radio-item.selected .radio-custom::after {
+            opacity: 1;
+        }
+
+        .radio-label {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        /* Sources */
+        .sources-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .source-tag {
+            padding: 6px 12px;
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .source-tag:hover {
+            border-color: var(--primary);
+            color: var(--primary-light);
+        }
+
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .generate-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Content Area */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Results */
+        .results-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            min-height: 500px;
+            overflow: hidden;
+        }
+
+        .results-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .results-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary-light);
+        }
+
+        .action-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .results-content {
+            padding: 24px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .results-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .results-content::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        .results-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            fill: var(--text-muted);
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h4 {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .loading-steps {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .loading-step.active {
+            color: var(--primary-light);
+        }
+
+        .loading-step.done {
+            color: var(--success);
+        }
+
+        .step-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .loading-step.active .step-indicator {
+            background: var(--primary);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .loading-step.done .step-indicator {
+            background: var(--success);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Info banner */
+        .info-banner {
+            padding: 12px 16px;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            margin: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .info-banner svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--primary-light);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .info-banner-content {
+            flex: 1;
+        }
+
+        .info-banner h4 {
+            font-size: 14px;
+            color: var(--primary-light);
+            margin-bottom: 4px;
+        }
+
+        .info-banner p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* Newsletter */
+        .newsletter-card {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(245, 158, 11, 0.1));
+            border-color: var(--primary);
+        }
+
+        .newsletter-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .newsletter-input {
+            padding: 12px 16px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .newsletter-input:focus {
+            border-color: var(--primary);
+        }
+
+        .newsletter-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .newsletter-btn {
+            padding: 12px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .newsletter-btn:hover {
+            background: var(--accent-dark);
+        }
+
+        .newsletter-success {
+            padding: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            color: var(--success);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* Veille Content Styling */
+        .veille-content {
+            color: var(--text-primary);
+        }
+
+        .veille-content h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-light);
+            margin-bottom: 8px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .veille-content h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 24px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .veille-content h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .veille-content h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 16px 0 8px;
+        }
+
+        .veille-content p {
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .veille-content ul, .veille-content ol {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        .veille-content li {
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .veille-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .veille-content a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+
+        .veille-content a:hover {
+            text-decoration: underline;
+        }
+
+        .veille-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .veille-content th, .veille-content td {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .veille-content th {
+            background: var(--bg-card-hover);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .veille-content td {
+            color: var(--text-secondary);
+        }
+
+        .veille-content blockquote {
+            margin: 16px 0;
+            padding: 12px 16px;
+            border-left: 4px solid var(--primary);
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .veille-content blockquote p {
+            margin: 0;
+            color: var(--text-primary);
+            font-style: italic;
+        }
+
+        .veille-content hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 24px 0;
+        }
+
+        .veille-content em {
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        footer p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .header-title {
+                text-align: center;
+            }
+
+            .logo-name {
+                font-size: 20px;
+            }
+
+            .results-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <img src="data:image/png;base64,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" alt="CARINEL" style="height: 60px; width: auto;">
+            </div>
+            <div class="header-title">
+                <h1>Outil de Veille Stratégique</h1>
+                <p>Sûreté · Cybersécurité · Réglementation · Terrorisme</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Domaines de veille -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Domaines de Veille</h2>
+                    </div>
+                    <div class="checkbox-group" id="domains">
+                        <div class="checkbox-item selected" data-value="surete">
+                            <input type="checkbox" value="surete" checked>
+                            <span class="checkbox-custom">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </span>
+                            <span class="checkbox-icon">🛡️</span>
+                            <span class="checkbox-label">Sûreté & Sécurité physique</span>
+                        </div>
+                        <div class="checkbox-item" data-value="videoprotection">
+                            <input type="checkbox" value="videoprotection">
+                            <span class="checkbox-custom">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </span>
+                            <span class="checkbox-icon">📹</span>
+                            <span class="checkbox-label">Vidéosurveillance & Vidéoprotection</span>
+                        </div>
+                        <div class="checkbox-item" data-value="crise">
+                            <input type="checkbox" value="crise">
+                            <span class="checkbox-custom">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </span>
+                            <span class="checkbox-icon">⚡</span>
+                            <span class="checkbox-label">Gestion de crise & Résilience</span>
+                        </div>
+                        <div class="checkbox-item selected" data-value="terrorisme">
+                            <input type="checkbox" value="terrorisme" checked>
+                            <span class="checkbox-custom">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </span>
+                            <span class="checkbox-icon">☢️</span>
+                            <span class="checkbox-label">Terrorisme & Radicalisation</span>
+                        </div>
+                        <div class="checkbox-item" data-value="criminalite">
+                            <input type="checkbox" value="criminalite">
+                            <span class="checkbox-custom">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </span>
+                            <span class="checkbox-icon">🔍</span>
+                            <span class="checkbox-label">Criminalité & Actes de malveillance</span>
+                        </div>
+                        <div class="checkbox-item selected" data-value="cyber">
+                            <input type="checkbox" value="cyber" checked>
+                            <span class="checkbox-custom">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </span>
+                            <span class="checkbox-icon">💻</span>
+                            <span class="checkbox-label">Cybersécurité & ANSSI</span>
+                        </div>
+                        <div class="checkbox-item selected" data-value="reglementation">
+                            <input type="checkbox" value="reglementation" checked>
+                            <span class="checkbox-custom">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </span>
+                            <span class="checkbox-icon">📋</span>
+                            <span class="checkbox-label">NIS2 · DORA · Directive REC</span>
+                        </div>
+                        <div class="checkbox-item selected" data-value="juridique">
+                            <input type="checkbox" value="juridique" checked>
+                            <span class="checkbox-custom">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </span>
+                            <span class="checkbox-icon">⚖️</span>
+                            <span class="checkbox-label">Actualité Juridique & Conformité</span>
+                        </div>
+                        <div class="checkbox-item" data-value="risques">
+                            <input type="checkbox" value="risques">
+                            <span class="checkbox-custom">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </span>
+                            <span class="checkbox-icon">⚠️</span>
+                            <span class="checkbox-label">Risques & Catastrophes naturelles</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Période -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Période</h2>
+                    </div>
+                    <div class="radio-group" id="period">
+                        <label class="radio-item">
+                            <input type="radio" name="period" value="7">
+                            <span class="radio-custom"></span>
+                            <span class="radio-label">7 derniers jours</span>
+                        </label>
+                        <label class="radio-item selected">
+                            <input type="radio" name="period" value="30" checked>
+                            <span class="radio-custom"></span>
+                            <span class="radio-label">Dernier mois (recommandé)</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="period" value="90">
+                            <span class="radio-custom"></span>
+                            <span class="radio-label">Dernier trimestre</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Sources -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Sources Intégrées</h2>
+                    </div>
+                    <div class="sources-grid">
+                        <span class="source-tag">SGDSN</span>
+                        <span class="source-tag">ANSSI</span>
+                        <span class="source-tag">CERT-FR</span>
+                        <span class="source-tag">IHEMI</span>
+                        <span class="source-tag">LIREC</span>
+                        <span class="source-tag">COMCYBER</span>
+                        <span class="source-tag">CIPDR</span>
+                        <span class="source-tag">HCFRN</span>
+                        <span class="source-tag">CNIL</span>
+                        <span class="source-tag">ENISA</span>
+                        <span class="source-tag">Info.gouv</span>
+                        <span class="source-tag">Gazette des Communes</span>
+                        <span class="source-tag">Interstats</span>
+                        <span class="source-tag">Légifrance</span>
+                        <span class="source-tag">Actu-Juridique</span>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <button class="generate-btn" id="generateBtn" onclick="generateVeille()">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                    Générer la Veille
+                </button>
+            </aside>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <div class="results-container">
+                    <div class="results-header">
+                        <h3>Résultats de la Veille</h3>
+                        <div class="results-actions">
+                            <button class="action-btn" onclick="copyToClipboard()" id="copyBtn" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                Copier
+                            </button>
+                            <button class="action-btn" onclick="downloadPDF()" id="downloadBtn" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                                Télécharger PDF
+                            </button>
+                            <button class="action-btn" onclick="sendByEmail()" id="emailBtn" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                                Envoyer par email
+                            </button>
+                        </div>
+                    </div>
+                    <div class="results-content" id="resultsContent">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                            <h4>Sélectionnez vos domaines de veille</h4>
+                            <p>Choisissez les thématiques et la période, puis cliquez sur "Générer la Veille"</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 CARINEL - Audit · Conseil · Formation | <a href="mailto:info@carinel.com">info@carinel.com</a></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    <script>
+        // =====================================================
+        // CONFIGURATION
+        // =====================================================
+        
+        // Détecter si on est sur Netlify (production) ou en local
+        const isProduction = window.location.hostname.includes('netlify.app') || 
+                            window.location.hostname.includes('carinel');
+
+        // =====================================================
+        // UI INITIALIZATION
+        // =====================================================
+        
+        // Initialize checkboxes - simple click handler
+        document.querySelectorAll('#domains .checkbox-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                this.classList.toggle('selected', checkbox.checked);
+            });
+        });
+
+        // Initialize radio buttons
+        document.querySelectorAll('#period .radio-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const radio = this.querySelector('input[type="radio"]');
+                radio.checked = true;
+                document.querySelectorAll('.radio-item').forEach(r => r.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+        
+        // Set initial selected state
+        document.querySelectorAll('.checkbox-item').forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox && checkbox.checked) {
+                item.classList.add('selected');
+            }
+        });
+        
+        document.querySelectorAll('.radio-item').forEach(item => {
+            const radio = item.querySelector('input[type="radio"]');
+            if (radio && radio.checked) {
+                item.classList.add('selected');
+            }
+        });
+
+        // =====================================================
+        // HELPER FUNCTIONS
+        // =====================================================
+
+        function getSelectedDomains() {
+            const domains = [];
+            document.querySelectorAll('#domains input[type="checkbox"]:checked').forEach(cb => {
+                domains.push(cb.value);
+            });
+            return domains;
+        }
+
+        function getSelectedPeriod() {
+            const selected = document.querySelector('#period input[type="radio"]:checked');
+            return selected ? parseInt(selected.value) : 30;
+        }
+
+        const domainLabels = {
+            'surete': 'Sûreté & Sécurité physique',
+            'videoprotection': 'Vidéosurveillance & Vidéoprotection',
+            'crise': 'Gestion de crise & Résilience',
+            'terrorisme': 'Terrorisme & Radicalisation',
+            'criminalite': 'Criminalité & Actes de malveillance',
+            'cyber': 'Cybersécurité & ANSSI',
+            'reglementation': 'NIS2 · DORA · Directive REC',
+            'juridique': 'Actualité Juridique & Conformité',
+            'risques': 'Risques & Catastrophes naturelles'
+        };
+
+        function showLoading(steps) {
+            const content = document.getElementById('resultsContent');
+            content.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p class="loading-text">Génération de la veille en cours...</p>
+                    <div class="loading-steps" id="loadingSteps">
+                        ${steps.map((step, i) => `
+                            <div class="loading-step ${i === 0 ? 'active' : ''}" id="step-${i}">
+                                <span class="step-indicator"></span>
+                                <span>${step}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateLoadingStep(currentStep, totalSteps) {
+            for (let i = 0; i < totalSteps; i++) {
+                const stepEl = document.getElementById(`step-${i}`);
+                if (stepEl) {
+                    stepEl.classList.remove('active');
+                    if (i < currentStep) {
+                        stepEl.classList.add('done');
+                    } else if (i === currentStep) {
+                        stepEl.classList.add('active');
+                    }
+                }
+            }
+        }
+
+        // =====================================================
+        // DEMO DATA - Données d'exemple pour le mode démo
+        // =====================================================
+
+        function generateDemoContent(domains, period) {
+            const now = new Date();
+            const monthNames = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+            const lastMonth = monthNames[(now.getMonth() - 1 + 12) % 12];
+            const year = now.getFullYear();
+            
+            // Adapter le titre et la description selon la période
+            let periodTitle, periodDescription;
+            if (period === 7) {
+                const weekStart = new Date(now);
+                weekStart.setDate(weekStart.getDate() - 7);
+                periodTitle = `VEILLE STRATÉGIQUE - SEMAINE DU ${weekStart.getDate()} AU ${now.getDate()} ${monthNames[now.getMonth()].toUpperCase()} ${year}`;
+                periodDescription = `Les 7 derniers jours ont été marqués`;
+            } else if (period === 30) {
+                periodTitle = `VEILLE STRATÉGIQUE - ${lastMonth.toUpperCase()} ${year}`;
+                periodDescription = `Le mois de ${lastMonth} ${year} a été marqué`;
+            } else {
+                // Trimestre
+                const quarterMonth = Math.floor((now.getMonth()) / 3) * 3;
+                const quarterNames = ['T1 (janvier-mars)', 'T2 (avril-juin)', 'T3 (juillet-septembre)', 'T4 (octobre-décembre)'];
+                const quarter = Math.floor(now.getMonth() / 3);
+                periodTitle = `VEILLE STRATÉGIQUE - ${quarterNames[quarter]} ${year}`;
+                periodDescription = `Le trimestre écoulé a été marqué`;
+            }
+
+            let content = `# ${periodTitle}
+
+## Synthèse des faits marquants
+
+${periodDescription} par plusieurs enjeux majeurs en matière de sécurité :
+
+`;
+
+            // Add summary points based on selected domains
+            const summaryPoints = [];
+            if (domains.includes('cyber')) summaryPoints.push('Recrudescence des cyberattaques ciblant les collectivités territoriales');
+            if (domains.includes('terrorisme')) summaryPoints.push('Maintien du niveau de vigilance renforcée sur le territoire national');
+            if (domains.includes('reglementation')) summaryPoints.push('Entrée en vigueur progressive des nouvelles exigences NIS2/DORA');
+            if (domains.includes('juridique')) summaryPoints.push('Publication de nouveaux décrets encadrant la sécurité privée');
+            if (domains.includes('surete')) summaryPoints.push('Renforcement des dispositifs de sécurité des sites sensibles');
+
+            summaryPoints.forEach(point => {
+                content += `- **${point}**\n`;
+            });
+
+            content += '\n';
+
+            // Generate sections for each selected domain
+            if (domains.includes('surete')) {
+                content += `## Sûreté & Sécurité physique
+
+### Faits marquants
+
+La sécurisation des sites sensibles reste une priorité nationale. Le ministère de l'Intérieur recommande :
+
+- Le renforcement des contrôles d'accès aux bâtiments publics
+- La mise à jour des plans de protection contre les intrusions
+- L'amélioration de l'éclairage et de la signalétique de sécurité
+- L'audit régulier des dispositifs anti-intrusion
+
+### Bonnes pratiques
+
+Les collectivités sont invitées à :
+
+- Réaliser un diagnostic de sûreté de leurs sites sensibles
+- Former les agents d'accueil aux procédures de sécurité
+- Mettre en place des exercices de simulation
+
+*Sources : [Ministère de l'Intérieur](https://www.interieur.gouv.fr), [SGDSN](https://www.sgdsn.gouv.fr)*
+
+`;
+            }
+
+            if (domains.includes('cyber')) {
+                content += `## Cybersécurité & ANSSI
+
+### Veille sur les menaces
+
+Les principales menaces identifiées par le CERT-FR concernent :
+
+- **Rançongiciels** : Les collectivités territoriales restent des cibles privilégiées
+- **Hameçonnage** : Campagnes ciblant les agents publics en augmentation
+- **Vulnérabilités logicielles** : Importance des mises à jour régulières
+
+### Recommandations ANSSI
+
+L'ANSSI recommande aux collectivités de :
+
+1. Mettre à jour régulièrement les systèmes et applications
+2. Renforcer la surveillance des journaux de connexion
+3. Activer l'authentification multifacteur sur tous les accès critiques
+4. Sauvegarder régulièrement les données critiques
+5. Sensibiliser les agents aux risques cyber
+
+> « Les cyberattaques constituent désormais une menace quotidienne pour les collectivités et services publics. » — ANSSI
+
+*Sources : [CERT-FR](https://www.cert.ssi.gouv.fr), [ANSSI](https://www.ssi.gouv.fr)*
+
+`;
+            }
+
+            if (domains.includes('terrorisme')) {
+                content += `## Terrorisme & Radicalisation
+
+### Analyse de la menace
+
+La DGSI maintient son évaluation de la menace terroriste à un niveau élevé. Les principales observations :
+
+- Profils de plus en plus jeunes et désocialisés
+- Radicalisation principalement en ligne via les réseaux sociaux
+- Augmentation des signalements dans le milieu scolaire
+
+### Prévention
+
+Le CIPDR recommande de renforcer :
+
+- La formation des personnels en contact avec les jeunes
+- Les dispositifs de signalement ([plateforme PHAROS](https://www.internet-signalement.gouv.fr))
+- La coordination avec les référents radicalisation
+
+*Sources : [CIPDR](https://www.cipdr.gouv.fr), [Stop-Djihadisme](https://www.stop-djihadisme.gouv.fr)*
+
+`;
+            }
+
+            if (domains.includes('reglementation')) {
+                content += `## NIS2 · DORA · Directive REC
+
+### État de la transposition
+
+**Directive NIS2** (Network and Information Security)
+- Transposition en droit français en cours
+- Élargissement significatif du périmètre des entités concernées
+- Nouvelles obligations de notification des incidents sous 24h
+
+**Règlement DORA** (Digital Operational Resilience Act)
+- Application effective depuis janvier 2025
+- Obligations renforcées pour le secteur financier
+- Tests de résilience opérationnelle obligatoires
+
+**Directive REC** (Résilience des Entités Critiques)
+- Identification des entités critiques en cours
+- Nouvelles exigences de sécurité physique et cyber
+- Coordination avec les autorités nationales
+
+### Implications pour les collectivités
+
+Les collectivités de plus de 50 000 habitants seront progressivement soumises aux exigences NIS2. Il est recommandé de :
+
+- Réaliser un audit de conformité dès maintenant
+- Identifier les systèmes d'information critiques
+- Mettre en place un processus de gestion des incidents
+
+*Sources : [ANSSI - NIS2](https://www.ssi.gouv.fr/directive-nis-2/), [EUR-Lex - DORA](https://eur-lex.europa.eu)*
+
+`;
+            }
+
+            if (domains.includes('juridique')) {
+                content += `## Actualité Juridique & Conformité
+
+### Points de vigilance
+
+En matière de conformité, les collectivités doivent porter une attention particulière à :
+
+- **Vidéoprotection** : Vérification des autorisations préfectorales et de la conformité RGPD
+- **Sécurité privée** : Contrôle des agréments et habilitations des agents
+- **Protection des données** : Mise à jour des registres de traitement
+
+### Rappel des obligations CNIL
+
+La CNIL rappelle les principales obligations en matière de vidéosurveillance :
+
+- Information claire des personnes filmées (panneaux)
+- Durée de conservation limitée (30 jours maximum en général)
+- Analyse d'impact obligatoire pour les dispositifs étendus
+- Désignation d'un référent vidéoprotection
+
+*Sources : [CNIL](https://www.cnil.fr), [Légifrance](https://www.legifrance.gouv.fr), [Gazette des Communes](https://www.lagazettedescommunes.com)*
+
+`;
+            }
+
+            if (domains.includes('videoprotection')) {
+                content += `## Vidéosurveillance & Vidéoprotection
+
+### Évolutions réglementaires
+
+Les commissions départementales de vidéoprotection ont renforcé leurs exigences concernant :
+
+- La conformité RGPD des dispositifs existants
+- L'encadrement de la vidéosurveillance augmentée (IA)
+- Les délais de conservation des images (30 jours maximum)
+
+### Contrôles CNIL
+
+La CNIL a intensifié ses contrôles sur :
+
+- Les dispositifs installés dans les ERP
+- La vidéosurveillance des salariés
+- Les caméras augmentées utilisant l'IA
+
+### Bonnes pratiques
+
+- Affichage obligatoire à l'entrée des zones surveillées
+- Registre de traitement à jour
+- Formation des opérateurs
+
+*Sources : [CNIL - Vidéosurveillance](https://www.cnil.fr/fr/videoprotection-videosurveillance), [Préfectures](https://www.prefectures-regions.gouv.fr)*
+
+`;
+            }
+
+            if (domains.includes('crise')) {
+                content += `## Gestion de crise & Résilience
+
+### Actualité SGDSN
+
+Le Secrétariat Général de la Défense et de la Sécurité Nationale a publié :
+
+- Une mise à jour du guide de continuité d'activité
+- Des recommandations pour les exercices de crise
+- Un retour d'expérience sur les crises récentes
+
+### Recommandations
+
+Pour améliorer votre résilience :
+
+1. Tester régulièrement vos plans de continuité d'activité
+2. Former les équipes à la gestion de crise
+3. Maintenir à jour les contacts d'urgence
+4. Prévoir des moyens de communication de secours
+
+*Sources : [SGDSN](https://www.sgdsn.gouv.fr), [HCFRN](https://www.hcfrn.fr), [IHEMI](https://www.ihemi.fr)*
+
+`;
+            }
+
+            if (domains.includes('criminalite')) {
+                content += `## Criminalité & Actes de malveillance
+
+### Tendances observées
+
+Selon les rapports Interstats du SSMSI, les principales tendances sont :
+
+- Augmentation des vols par ruse ciblant les personnes âgées
+- Développement des arnaques aux faux conseillers bancaires
+- Hausse des dégradations sur les équipements publics
+
+### Prévention
+
+Les collectivités sont invitées à :
+
+- Renforcer la communication préventive auprès des publics vulnérables
+- Coordonner les actions avec les forces de l'ordre locales
+- Participer aux instances de sécurité locales (CLSPD)
+
+*Sources : [Interstats - SSMSI](https://www.interieur.gouv.fr/Interstats), [CIPDR](https://www.cipdr.gouv.fr)*
+
+`;
+            }
+
+            if (domains.includes('risques')) {
+                content += `## Risques & Catastrophes naturelles
+
+### Veille météorologique
+
+Météo France rappelle les principaux risques saisonniers :
+
+- Risques d'inondations selon les régions
+- Vigilance canicule en période estivale
+- Risques de feux de forêt et de végétation
+
+### Recommandations
+
+- Mettre à jour les plans communaux de sauvegarde
+- Vérifier les systèmes d'alerte population
+- Prévoir les mesures de protection des biens
+- Tester les dispositifs d'évacuation
+
+*Sources : [Météo France](https://vigilance.meteofrance.fr), [Géorisques](https://www.georisques.gouv.fr), [BRGM](https://www.brgm.fr)*
+
+`;
+            }
+
+            // Add recommendations section
+            content += `## Recommandations à court terme
+
+Basées sur les enjeux identifiés :
+
+`;
+
+            if (domains.includes('cyber')) content += `- **Cybersécurité** : Appliquer immédiatement les correctifs de sécurité critiques\n`;
+            if (domains.includes('surete')) content += `- **Sûreté** : Auditer les dispositifs de contrôle d'accès\n`;
+            if (domains.includes('reglementation')) content += `- **Conformité** : Initier l'évaluation de conformité NIS2\n`;
+            if (domains.includes('juridique')) content += `- **Juridique** : Vérifier la conformité des dispositifs de vidéoprotection\n`;
+            if (domains.includes('terrorisme')) content += `- **Radicalisation** : Sensibiliser les équipes aux signaux d'alerte\n`;
+            if (domains.includes('crise')) content += `- **Résilience** : Planifier un exercice de crise avant la fin du trimestre\n`;
+            if (domains.includes('videoprotection')) content += `- **Vidéoprotection** : Vérifier la conformité RGPD des dispositifs\n`;
+            if (domains.includes('criminalite')) content += `- **Prévention** : Renforcer la sensibilisation des publics vulnérables\n`;
+            if (domains.includes('risques')) content += `- **Risques** : Mettre à jour les plans communaux de sauvegarde\n`;
+
+            content += `
+---
+
+*Sources consultées : [ANSSI](https://www.ssi.gouv.fr) · [CERT-FR](https://www.cert.ssi.gouv.fr) · [SGDSN](https://www.sgdsn.gouv.fr) · [IHEMI](https://www.ihemi.fr) · [CIPDR](https://www.cipdr.gouv.fr) · [CNIL](https://www.cnil.fr) · [Interstats](https://www.interieur.gouv.fr/Interstats) · [Légifrance](https://www.legifrance.gouv.fr) · [Gazette des Communes](https://www.lagazettedescommunes.com)*
+
+*Document généré par CARINEL - Outil de Veille Stratégique*
+`;
+
+            return content;
+        }
+
+        // =====================================================
+        // MAIN GENERATE FUNCTION
+        // =====================================================
+
+        async function generateVeille() {
+            const domains = getSelectedDomains();
+            const period = getSelectedPeriod();
+
+            if (domains.length === 0) {
+                alert('Veuillez sélectionner au moins un domaine de veille.');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; border-width: 2px; margin: 0;"></div> Génération...';
+
+            // Hide action buttons
+            document.getElementById('copyBtn').style.display = 'none';
+            document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('emailBtn').style.display = 'none';
+
+            const loadingSteps = [
+                'Connexion aux sources officielles...',
+                'Recherche des informations récentes...',
+                'Analyse et synthèse des données...',
+                'Vérification des faits et sources...',
+                'Génération du rapport de veille...'
+            ];
+
+            showLoading(loadingSteps);
+
+            // Simulate progress
+            let currentStep = 0;
+            const progressInterval = setInterval(() => {
+                currentStep++;
+                if (currentStep < loadingSteps.length) {
+                    updateLoadingStep(currentStep, loadingSteps.length);
+                }
+            }, 600);
+
+            try {
+                if (isProduction) {
+                    // Mode production : appeler l'API via Netlify Functions
+                    const domainsText = domains.map(d => domainLabels[d]).join(', ');
+                    
+                    let periodText, periodTitle;
+                    const now = new Date();
+                    const monthNames = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+                    const lastMonth = monthNames[(now.getMonth() - 1 + 12) % 12];
+                    const year = now.getFullYear();
+                    
+                    if (period === 7) {
+                        periodText = 'les 7 derniers jours';
+                        periodTitle = `la semaine du ${new Date(now - 7*24*60*60*1000).getDate()} au ${now.getDate()} ${monthNames[now.getMonth()]} ${year}`;
+                    } else if (period === 30) {
+                        periodText = 'le dernier mois';
+                        periodTitle = `${lastMonth} ${year}`;
+                    } else {
+                        periodText = 'le dernier trimestre';
+                        const quarter = Math.floor(now.getMonth() / 3);
+                        const quarterNames = ['T1 (janvier-mars)', 'T2 (avril-juin)', 'T3 (juillet-septembre)', 'T4 (octobre-décembre)'];
+                        periodTitle = `${quarterNames[quarter]} ${year}`;
+                    }
+
+                    const systemPrompt = `Tu es un expert en veille stratégique spécialisé dans la sécurité pour les collectivités territoriales en France.
+
+RÈGLES IMPORTANTES:
+1. Utilise le format Markdown
+2. Recherche les informations actuelles sur internet
+3. Pour chaque fait, cite la source avec son URL complète
+4. Inclus les liens vers: ANSSI, CERT-FR, CNIL, Légifrance, SGDSN, CIPDR
+5. Donne des informations concrètes et datées`;
+
+                    const userPrompt = `Génère une note de veille stratégique pour ${periodText} (${periodTitle}).
+
+Domaines à couvrir: ${domainsText}
+
+Structure:
+1. Titre: "VEILLE STRATÉGIQUE - ${periodTitle.toUpperCase()}"
+2. Synthèse des faits marquants (5 points clés avec dates)
+3. Une section par domaine avec faits récents et sources
+4. Recommandations à court terme
+5. Sources consultées avec URLs`;
+
+                    // Appel direct à l'API
+                    const response = await fetch('/.netlify/functions/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            system: systemPrompt,
+                            messages: [{ role: 'user', content: userPrompt }]
+                        })
+                    });
+
+                    clearInterval(progressInterval);
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Erreur API');
+                    }
+
+                    const data = await response.json();
+                    
+                    if (!data.content) {
+                        throw new Error('Aucun contenu généré');
+                    }
+                    
+                    displayResults(data.content);
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> Générer la Veille';
+
+                } else {
+                    // Mode démo : utiliser les données d'exemple
+                    await new Promise(resolve => setTimeout(resolve, 3000)); // Simuler le temps de génération
+                    clearInterval(progressInterval);
+                    
+                    const demoContent = generateDemoContent(domains, period);
+                    displayResults(demoContent);
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> Générer la Veille';
+                }
+
+            } catch (error) {
+                clearInterval(progressInterval);
+                console.error('Error:', error);
+                
+                // Afficher le contenu de démonstration avec un message d'erreur simple
+                const errorMsg = `> ⚠️ **Note** : La génération automatique a rencontré une erreur. Contenu d'exemple affiché ci-dessous.
+
+` + generateDemoContent(domains, period);
+                displayResults(errorMsg);
+                btn.disabled = false;
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> Générer la Veille';
+            }
+            // Note: pas de finally car le polling gère lui-même l'état du bouton
+        }
+
+        // =====================================================
+        // DISPLAY RESULTS
+        // =====================================================
+
+        function displayResults(markdownContent) {
+            const content = document.getElementById('resultsContent');
+            
+            marked.setOptions({ breaks: true, gfm: true });
+            const htmlContent = marked.parse(markdownContent);
+
+            content.innerHTML = `<div class="veille-content">${htmlContent}</div>`;
+
+            // Show action buttons
+            document.getElementById('copyBtn').style.display = 'flex';
+            document.getElementById('downloadBtn').style.display = 'flex';
+            document.getElementById('emailBtn').style.display = 'flex';
+
+            // Store content
+            window.veilleContent = markdownContent;
+        }
+
+        // =====================================================
+        // ACTION BUTTONS
+        // =====================================================
+
+        async function copyToClipboard() {
+            if (window.veilleContent) {
+                try {
+                    await navigator.clipboard.writeText(window.veilleContent);
+                    const btn = document.getElementById('copyBtn');
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Copié !';
+                    setTimeout(() => {
+                        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copier';
+                    }, 2000);
+                } catch (err) {
+                    alert('Erreur lors de la copie');
+                }
+            }
+        }
+
+        function downloadPDF() {
+            if (window.veilleContent) {
+                const printWindow = window.open('', '_blank');
+                const htmlContent = marked.parse(window.veilleContent);
+                
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Veille Stratégique CARINEL</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+                            h1 { color: #0284C7; border-bottom: 2px solid #0284C7; padding-bottom: 10px; }
+                            h2 { color: #F59E0B; margin-top: 30px; }
+                            h3 { color: #334155; }
+                            table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+                            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                            th { background: #f5f5f5; }
+                            blockquote { border-left: 4px solid #0284C7; padding-left: 15px; margin: 15px 0; background: #f8fafc; }
+                            @media print { body { margin: 20px; } }
+                        </style>
+                    </head>
+                    <body>
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h2 style="color: #0284C7; margin: 0;">CAR|NEL</h2>
+                            <p style="color: #666; font-size: 12px; margin: 5px 0;">Audit · Conseil · Formation</p>
+                        </div>
+                        ${htmlContent}
+                        <hr style="margin-top: 40px;">
+                        <p style="font-size: 12px; color: #666; text-align: center;">Document généré par CARINEL - Outil de Veille Stratégique</p>
+                    </body>
+                    </html>
+                `);
+                
+                printWindow.document.close();
+                setTimeout(() => printWindow.print(), 250);
+            }
+        }
+
+        function sendByEmail() {
+            if (window.veilleContent) {
+                const subject = encodeURIComponent('Veille Stratégique CARINEL');
+                const body = encodeURIComponent(window.veilleContent);
+                window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            }
+        }
+    </script>
+</body>
+</html>
