@@ -1,8 +1,0 @@
-{
-  "name": "carinel-veille-strategique",
-  "version": "1.0.0",
-  "description": "CARINEL - Outil de Veille Strategique",
-  "dependencies": {
-    "@netlify/blobs": "^8.0.0"
-  }
-}
