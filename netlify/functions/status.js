@@ -18,7 +18,12 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const store = getStore("veille-jobs");
+    const store = getStore({
+      name: "veille-jobs",
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_BLOBS_TOKEN
+    });
+    
     const job = await store.get(jobId, { type: 'json' });
 
     if (!job) {
