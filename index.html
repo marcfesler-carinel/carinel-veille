@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARINEL - Outil de Veille Stratégique</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary: #4BBDE8;
+            --primary-dark: #0284C7;
+            --secondary: #F59E0B;
+            --bg-dark: #0a0e14;
+            --bg-card: #12161e;
+            --bg-surface: #1a1f2a;
+            --text-primary: #e8eaf0;
+            --text-muted: #7a8098;
+            --border: #252a38;
+            --success: #10B981;
+            --danger: #EF4444;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            height: 55px;
+            object-fit: contain;
+        }
+        
+        header h1 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        header p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 3px;
+        }
+        
+        /* Main Layout */
+        main {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            height: calc(100vh - 85px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 25px;
+            overflow-y: auto;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary);
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Checkboxes */
+        .domain-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .domain-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-surface);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .domain-item:hover {
+            border-color: var(--primary);
+        }
+        
+        .domain-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+        
+        .domain-item .icon {
+            font-size: 1.3rem;
+        }
+        
+        .domain-item .label {
+            font-size: 0.9rem;
+            flex: 1;
+        }
+        
+        /* Period Selection */
+        .period-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .period-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: var(--bg-surface);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .period-item input[type="radio"] {
+            accent-color: var(--primary);
+        }
+        
+        /* Sources */
+        .sources-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .source-tag {
+            background: var(--bg-surface);
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(75, 189, 232, 0.3);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Results Panel */
+        .results-panel {
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .results-header h2 {
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 15px;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--primary);
+            background: rgba(75, 189, 232, 0.1);
+        }
+        
+        /* Veille Content */
+        .veille-content {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid var(--border);
+        }
+        
+        .veille-content h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .veille-content h2 {
+            color: var(--secondary);
+            font-size: 1.3rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .veille-content h3 {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .veille-content p {
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+        
+        .veille-content ul, .veille-content ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .veille-content li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .veille-content a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .veille-content a:hover {
+            text-decoration: underline;
+        }
+        
+        .veille-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .veille-content th, .veille-content td {
+            border: 1px solid var(--border);
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .veille-content th {
+            background: var(--bg-surface);
+            color: var(--primary);
+        }
+        
+        .veille-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+            margin: 15px 0;
+            background: var(--bg-surface);
+            padding: 15px 15px 15px 20px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        /* Progress Indicator */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-surface);
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-bar.active {
+            display: block;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            animation: progress 2s ease-in-out infinite;
+        }
+        
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 10px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <!-- Logo sur fond noir -->
+            <img src="data:image/jpeg;base64,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" alt="CARINEL" class="logo">
+        </div>
+        <div style="text-align: right;">
+            <h1>OUTIL DE VEILLE STRATÉGIQUE</h1>
+            <p>Sûreté · Cybersécurité · Réglementation · Terrorisme</p>
+        </div>
+    </header>
+    
+    <main>
+        <aside class="sidebar">
+            <h3>📊 Domaines de Veille</h3>
+            <div class="domain-list">
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="surete" checked>
+                    <span class="icon">🛡️</span>
+                    <span class="label">Sûreté & Sécurité physique</span>
+                </label>
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="video">
+                    <span class="icon">📹</span>
+                    <span class="label">Vidéosurveillance & Vidéoprotection</span>
+                </label>
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="crise">
+                    <span class="icon">⚡</span>
+                    <span class="label">Gestion de crise & Résilience</span>
+                </label>
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="terrorisme">
+                    <span class="icon">☢️</span>
+                    <span class="label">Terrorisme & Radicalisation</span>
+                </label>
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="criminalite">
+                    <span class="icon">🔍</span>
+                    <span class="label">Criminalité & Délinquance</span>
+                </label>
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="cyber">
+                    <span class="icon">💻</span>
+                    <span class="label">Cybersécurité & CERT-FR</span>
+                </label>
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="nis2">
+                    <span class="icon">📋</span>
+                    <span class="label">NIS2 · DORA · Directive REC</span>
+                </label>
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="juridique">
+                    <span class="icon">⚖️</span>
+                    <span class="label">Juridique & Sanctions CNIL</span>
+                </label>
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="risques">
+                    <span class="icon">⚠️</span>
+                    <span class="label">Risques & Catastrophes</span>
+                </label>
+                <label class="domain-item">
+                    <input type="checkbox" name="domain" value="osint">
+                    <span class="icon">🔎</span>
+                    <span class="label">OSINT & Threat Intelligence</span>
+                </label>
+            </div>
+            
+            <h3>📅 Période</h3>
+            <div class="period-list">
+                <label class="period-item">
+                    <input type="radio" name="period" value="7">
+                    <span>7 derniers jours</span>
+                </label>
+                <label class="period-item">
+                    <input type="radio" name="period" value="30" checked>
+                    <span>Dernier mois (recommandé)</span>
+                </label>
+                <label class="period-item">
+                    <input type="radio" name="period" value="90">
+                    <span>Dernier trimestre</span>
+                </label>
+            </div>
+            
+            <h3>🔗 Sources Officielles</h3>
+            <div class="sources-grid">
+                <span class="source-tag">SGDSN</span>
+                <span class="source-tag">ANSSI</span>
+                <span class="source-tag">CERT-FR</span>
+                <span class="source-tag">CNIL</span>
+                <span class="source-tag">CIPDR</span>
+                <span class="source-tag">CNAPS</span>
+                <span class="source-tag">Interstats</span>
+                <span class="source-tag">Légifrance</span>
+                <span class="source-tag">ENISA</span>
+                <span class="source-tag">Géorisques</span>
+            </div>
+            
+            <button class="generate-btn" id="generateBtn" onclick="generateVeille()">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                GÉNÉRER LA VEILLE
+            </button>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill"></div>
+            </div>
+        </aside>
+        
+        <section class="results-panel">
+            <div class="results-header">
+                <h2>📄 Résultats de la Veille</h2>
+                <div class="action-buttons">
+                    <button class="action-btn" id="copyBtn" onclick="copyToClipboard()">📋 Copier</button>
+                    <button class="action-btn" id="downloadBtn" onclick="downloadPDF()">📄 PDF</button>
+                    <button class="action-btn" id="emailBtn" onclick="sendByEmail()">✉️ Email</button>
+                </div>
+            </div>
+            
+            <div id="resultsContent">
+                <div class="empty-state">
+                    <h3>Sélectionnez vos domaines de veille</h3>
+                    <p>Cochez les thématiques souhaitées puis cliquez sur "Générer la Veille"</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        © 2026 CARINEL - Audit · Conseil · Formation | <a href="https://www.carinel.com" target="_blank">www.carinel.com</a>
+    </footer>
+    
+    <script>
+        // Detect production environment
+        const isProduction = window.location.hostname.includes('netlify.app') || 
+                            window.location.hostname.includes('carinel');
+        
+        // Domain labels mapping
+        const domainLabels = {
+            'surete': 'Sûreté & Sécurité physique',
+            'video': 'Vidéosurveillance & Vidéoprotection',
+            'crise': 'Gestion de crise & Résilience',
+            'terrorisme': 'Terrorisme & Radicalisation',
+            'criminalite': 'Criminalité & Délinquance',
+            'cyber': 'Cybersécurité & CERT-FR',
+            'nis2': 'NIS2 · DORA · Directive REC',
+            'juridique': 'Juridique & Sanctions CNIL',
+            'risques': 'Risques & Catastrophes',
+            'osint': 'OSINT & Threat Intelligence'
+        };
+        
+        // Get month name in French
+        function getMonthName(monthIndex) {
+            const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
+                          'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+            return months[monthIndex];
+        }
+        
+        // Generate veille
+        async function generateVeille() {
+            const btn = document.getElementById('generateBtn');
+            const progressBar = document.getElementById('progressBar');
+            
+            // Get selected domains
+            const domains = Array.from(document.querySelectorAll('input[name="domain"]:checked'))
+                                 .map(cb => cb.value);
+            
+            if (domains.length === 0) {
+                alert('Veuillez sélectionner au moins un domaine de veille.');
+                return;
+            }
+            
+            // Get period
+            const period = document.querySelector('input[name="period"]:checked').value;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ Génération en cours...</span>';
+            progressBar.classList.add('active');
+            
+            // Calculate date range
+            const now = new Date();
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const monthName = getMonthName(lastMonth.getMonth());
+            const year = lastMonth.getFullYear();
+            
+            let periodText = '';
+            if (period === '7') periodText = 'les 7 derniers jours';
+            else if (period === '30') periodText = `le mois de ${monthName} ${year}`;
+            else periodText = 'le dernier trimestre';
+            
+            // Build domain text for prompt
+            const domainsText = domains.map(d => domainLabels[d]).join(', ');
+            
+            try {
+                if (isProduction) {
+                    // Production: Call Netlify function
+                    const systemPrompt = `Tu es un expert en veille stratégique sécurité/sûreté pour CARINEL.
+Génère une note de veille professionnelle pour ${periodText}.
+
+STRUCTURE DU RAPPORT (obligatoire) :
+1. Commencer DIRECTEMENT par "# VEILLE STRATÉGIQUE - ${monthName.toUpperCase()} ${year}" 
+2. Sur la ligne suivante, mettre l'objet du rapport : les domaines couverts (${domainsText})
+3. Puis la synthèse et les sections
+
+RÈGLES STRICTES :
+- NE JAMAIS écrire de phrase d'introduction comme "Basé sur mes recherches..." ou "Je vais générer..."
+- NE JAMAIS expliquer ce que tu vas faire
+- Commencer IMMÉDIATEMENT par le titre du rapport
+- Utiliser le format Markdown
+- Citer tes sources avec les URLs
+- Dates précises pour chaque fait
+- Informations vérifiables uniquement`;
+
+                    const userPrompt = `Génère une note de veille stratégique CARINEL pour ${periodText}.
+                    
+Domaines à couvrir : ${domainsText}
+
+Commence directement par le titre "# VEILLE STRATÉGIQUE - ${monthName.toUpperCase()} ${year}" sans aucune introduction.`;
+
+                    const response = await fetch('/.netlify/functions/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            system: systemPrompt,
+                            messages: [{ role: 'user', content: userPrompt }]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('API non disponible');
+                    }
+
+                    const data = await response.json();
+                    let veilleContent = '';
+                    
+                    if (data.content && typeof data.content === 'string') {
+                        veilleContent = data.content;
+                    } else if (data.content && Array.isArray(data.content)) {
+                        for (const block of data.content) {
+                            if (block.type === 'text') {
+                                veilleContent += block.text;
+                            }
+                        }
+                    }
+
+                    if (!veilleContent) {
+                        throw new Error('Aucun contenu généré');
+                    }
+
+                    // Clean the content - remove any preamble
+                    veilleContent = cleanVeilleContent(veilleContent, monthName, year, domainsText);
+                    
+                    displayResults(veilleContent);
+
+                } else {
+                    // Demo mode
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    const demoContent = generateDemoContent(domains, period, monthName, year, domainsText);
+                    displayResults(demoContent, true);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                const demoContent = generateDemoContent(domains, period, monthName, year, domainsText);
+                displayResults(demoContent, true);
+                
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> GÉNÉRER LA VEILLE';
+                progressBar.classList.remove('active');
+            }
+        }
+        
+        // Clean veille content - remove preambles and ensure proper structure
+        function cleanVeilleContent(content, monthName, year, domainsText) {
+            // Remove common preamble patterns
+            const preamblePatterns = [
+                /^.*?Basé sur mes recherches.*?\n/i,
+                /^.*?je peux maintenant générer.*?\n/i,
+                /^.*?je vais générer.*?\n/i,
+                /^.*?Voici.*?note de veille.*?\n/i,
+                /^.*?recherches récentes.*?\n/i,
+                /^VEILLE STRATÉGIQUE.*?Basé sur.*?\n/i,
+            ];
+            
+            let cleaned = content;
+            
+            for (const pattern of preamblePatterns) {
+                cleaned = cleaned.replace(pattern, '');
+            }
+            
+            // Ensure the content starts with the proper header
+            cleaned = cleaned.trim();
+            
+            // If doesn't start with #, add the header
+            if (!cleaned.startsWith('#')) {
+                cleaned = `# VEILLE STRATÉGIQUE - ${monthName.toUpperCase()} ${year}\n\n**Domaines couverts :** ${domainsText}\n\n${cleaned}`;
+            } else if (!cleaned.includes('Domaines couverts')) {
+                // If has header but no domains line, add it after the first line
+                const lines = cleaned.split('\n');
+                const firstLine = lines[0];
+                const rest = lines.slice(1).join('\n');
+                cleaned = `${firstLine}\n\n**Domaines couverts :** ${domainsText}\n${rest}`;
+            }
+            
+            return cleaned;
+        }
+        
+        // Generate demo content
+        function generateDemoContent(domains, period, monthName, year, domainsText) {
+            return `# VEILLE STRATÉGIQUE - ${monthName.toUpperCase()} ${year}
+
+**Domaines couverts :** ${domainsText}
+
+---
+
+## SYNTHÈSE DES FAITS MARQUANTS
+
+1. **Publication de nouvelles alertes CERT-FR** concernant des vulnérabilités critiques dans des équipements réseau
+2. **Évolution du cadre NIS2** avec mise à disposition du Référentiel Cyber France (ReCyF) par l'ANSSI
+3. **Sanctions CNIL record** au premier trimestre avec plusieurs millions d'euros d'amendes
+4. **Menace terroriste** : maintien de la vigilance sur les événements de masse
+5. **Statistiques criminalité** : publication des données Interstats mensuelles
+
+---
+
+## CYBERSÉCURITÉ & CERT-FR
+
+### Alertes critiques du mois
+
+Le CERT-FR a publié plusieurs alertes concernant des vulnérabilités activement exploitées :
+
+- **Vulnérabilités équipements réseau** : Plusieurs CVE critiques affectant des solutions d'accès distant
+- **Campagnes de phishing ciblées** : Recrudescence des attaques visant les messageries professionnelles
+
+**Source :** [cert.ssi.gouv.fr](https://cert.ssi.gouv.fr)
+
+---
+
+## CONFORMITÉ NIS2 / DORA
+
+### Évolutions réglementaires
+
+La transposition de la directive NIS2 en droit français progresse avec la mise à disposition d'outils par l'ANSSI.
+
+**Calendrier indicatif :**
+- Publication du Référentiel Cyber France (ReCyF)
+- Lancement de la plateforme MonEspaceNIS2
+
+**Source :** [cyber.gouv.fr](https://cyber.gouv.fr)
+
+---
+
+## RECOMMANDATIONS
+
+1. **Mettre à jour** les équipements concernés par les alertes CERT-FR
+2. **Évaluer** votre exposition aux nouvelles exigences NIS2
+3. **Sensibiliser** les équipes aux nouvelles techniques de phishing
+4. **Planifier** un audit de conformité si applicable
+
+---
+
+## SOURCES CONSULTÉES
+
+- CERT-FR : https://cert.ssi.gouv.fr
+- ANSSI : https://cyber.gouv.fr
+- CNIL : https://www.cnil.fr
+- Interstats : https://www.interieur.gouv.fr/Interstats
+
+---
+
+*Document généré par CARINEL - Outil de Veille Stratégique*
+
+*Note : Ceci est un contenu de démonstration. En mode production, le contenu est généré automatiquement à partir des sources officielles.*`;
+        }
+        
+        // Display results
+        function displayResults(markdownContent, isDemo = false) {
+            const content = document.getElementById('resultsContent');
+            
+            marked.setOptions({ breaks: true, gfm: true });
+            const htmlContent = marked.parse(markdownContent);
+
+            let demoNotice = '';
+            if (isDemo) {
+                demoNotice = `
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #F59E0B; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                        <strong style="color: #F59E0B;">⚠️ Mode Démonstration</strong>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem; color: var(--text-muted);">
+                            Ce contenu est un exemple. Pour une veille en temps réel, déployez l'outil sur Netlify avec votre clé API Anthropic.
+                        </p>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = demoNotice + `<div class="veille-content">${htmlContent}</div>`;
+
+            // Show action buttons
+            document.getElementById('copyBtn').style.display = 'flex';
+            document.getElementById('downloadBtn').style.display = 'flex';
+            document.getElementById('emailBtn').style.display = 'flex';
+
+            // Store content
+            window.veilleContent = markdownContent;
+        }
+        
+        // Copy to clipboard
+        async function copyToClipboard() {
+            if (window.veilleContent) {
+                try {
+                    await navigator.clipboard.writeText(window.veilleContent);
+                    const btn = document.getElementById('copyBtn');
+                    btn.innerHTML = '✅ Copié !';
+                    setTimeout(() => { btn.innerHTML = '📋 Copier'; }, 2000);
+                } catch (err) {
+                    alert('Erreur lors de la copie');
+                }
+            }
+        }
+        
+        // Download as PDF
+        function downloadPDF() {
+            if (window.veilleContent) {
+                const printWindow = window.open('', '_blank');
+                const htmlContent = marked.parse(window.veilleContent);
+                
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Veille Stratégique CARINEL</title>
+                        <style>
+                            body { 
+                                font-family: Arial, sans-serif; 
+                                max-width: 800px; 
+                                margin: 40px auto; 
+                                padding: 20px; 
+                                line-height: 1.6;
+                                color: #333;
+                            }
+                            h1 { 
+                                color: #0284C7; 
+                                border-bottom: 2px solid #0284C7; 
+                                padding-bottom: 10px; 
+                            }
+                            h2 { 
+                                color: #0284C7; 
+                                margin-top: 30px; 
+                            }
+                            h3 { 
+                                color: #334155;
+                                margin-top: 20px;
+                            }
+                            table { 
+                                border-collapse: collapse; 
+                                width: 100%; 
+                                margin: 15px 0; 
+                            }
+                            th, td { 
+                                border: 1px solid #ddd; 
+                                padding: 10px; 
+                                text-align: left; 
+                            }
+                            th { 
+                                background: #f5f5f5; 
+                            }
+                            a { 
+                                color: #0284C7; 
+                            }
+                            blockquote {
+                                border-left: 4px solid #0284C7;
+                                padding-left: 15px;
+                                margin: 15px 0;
+                                background: #f8fafc;
+                            }
+                            .header { 
+                                text-align: center; 
+                                margin-bottom: 40px; 
+                            }
+                            .header img { 
+                                height: 60px; 
+                            }
+                            .footer { 
+                                text-align: center; 
+                                margin-top: 40px; 
+                                font-size: 12px; 
+                                color: #666;
+                                border-top: 1px solid #ddd;
+                                padding-top: 20px;
+                            }
+                            @media print { 
+                                body { margin: 20px; } 
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <img src="https://static.wixstatic.com/media/1ca93b_0845a21708964552a2188f740ce33b5b~mv2.png" alt="CARINEL" onerror="this.outerHTML='<h2 style=color:#0284C7;margin:0>CARINEL</h2><p style=color:#666;font-size:12px;margin:5px>Audit · Conseil · Formation</p>'">
+                        </div>
+                        ${htmlContent}
+                        <div class="footer">
+                            <p>Document généré par CARINEL - Outil de Veille Stratégique</p>
+                            <p>www.carinel.com | info@carinel.com</p>
+                        </div>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                setTimeout(() => printWindow.print(), 500);
+            }
+        }
+        
+        // Send by email
+        function sendByEmail() {
+            if (window.veilleContent) {
+                const subject = encodeURIComponent('Veille Stratégique CARINEL');
+                const body = encodeURIComponent(window.veilleContent);
+                window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            }
+        }
+    </script>
+</body>
+</html>
